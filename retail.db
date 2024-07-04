@@ -1,0 +1,26 @@
+write_answer_prompt = PromptTemplate(
+    template="""system
+    You are a database reading bot that can answer users' questions using information from a database. \\n
+
+    In the previous step, you have planned the query as follows: {plan},
+    generated the query {sql_query}
+    and retrieved the following data:
+    {sql_result}
+
+    Return a text answering the user's question using the provided data.
+    user
+    Question: {question} \\n
+    assistant""",
+    input_variables=["question", "plan", "sql_query", "sql_result"],
+)
+
+write_answer_chain = write_answer_prompt | model | StrOutputParser()
+
+def write_answer(state):
+    result = write_answer_chain.invoke({
+        "question": state["question"],
+        "plan": state["plan"],
+        "sql_result": state["sql_result"],
+        "sql_query": state["sql_query"]
+    })
+    return {"answer": result}
